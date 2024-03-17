@@ -45,7 +45,16 @@ namespace NDMM20241103.Controllers
         // GET: FacturaVentas/Create
         public IActionResult Create()
         {
-            return View();
+            var facturaVenta = new FacturaVenta();
+            facturaVenta.FechaVenta = DateTime.Now;
+            facturaVenta.TotalVenta = 0;
+            facturaVenta.DetFacturaVenta = new List<DetFacturaVenta>();
+            facturaVenta.DetFacturaVenta.Add(new DetFacturaVenta
+            {
+                Cantidad = 1
+            });
+            ViewBag.Accion = "Create";
+            return View(facturaVenta);
         }
 
         // POST: FacturaVentas/Create
