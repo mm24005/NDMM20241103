@@ -21,7 +21,7 @@
             <th>
                 @if (ViewBag.Accion == "Create" || ViewBag.Accion == "Edit")
                 {
-                    <button type="submit" class="btn btn-primary" formaction="@Url.Action("AgregarDetalles")">Agregar</button>
+                    <button type="submit" class="btn btn-outline-primary" formaction="@Url.Action("AgregarDetalles")">Agregar</button>
                 }
 
             </th>
@@ -55,7 +55,7 @@
                         <td>
                             @if (ViewBag.Accion == "Create" || ViewBag.Accion == "Edit")
                             {
-                                <button name="index" value="@index" class="btn btn-primary" type="submit" formaction="@Url.Action("EliminarDetalles")">Eliminar</button>
+                                <button name="index" value="@index" class="btn btn-outline-danger" type="submit" formaction="@Url.Action("EliminarDetalles")">Eliminar</button>
                             }
 
                         </td>

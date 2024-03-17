@@ -1,14 +1,12 @@
 ﻿@model NDMM20241103.Models.FacturaVenta
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Detalles";
 }
 
-<h1>Details</h1>
+<h1>Detalles</h1>
 
 <div>
-    <h4>FacturaVenta</h4>
-    <hr />
     <dl class="row">
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.FechaVenta)
@@ -40,6 +38,6 @@
     @await Html.PartialAsync("_DetFacturaVentas", Model.DetFacturaVenta)
 </div>
 <div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+    <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn btn-outline-success">Editar</a>
+    <a asp-action="Index" class="btn btn-outline-danger">Cancelar</a>
 </div>
