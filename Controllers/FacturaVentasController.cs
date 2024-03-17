@@ -78,6 +78,22 @@ namespace NDMM20241103.Controllers
             ViewBag.Accion = accion;
             return View(accion, facturaVenta);
         }
+        public ActionResult EliminarDetalles([Bind("Id,FechaVenta,Correlativo,Cliente,TotalVenta,DetFacturaVenta")] FacturaVenta facturaVenta,
+           int index, string accion)
+        {
+            var det = facturaVenta.DetFacturaVenta[index];
+            if (accion == "Edit" && det.Id > 0)
+            {
+                det.Id = det.Id * -1;
+            }
+            else
+            {
+                facturaVenta.DetFacturaVenta.RemoveAt(index);
+            }
+
+            ViewBag.Accion = accion;
+            return View(accion, facturaVenta);
+        }
         // GET: FacturaVentas/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
