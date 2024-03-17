@@ -27,7 +27,7 @@ namespace NDMM20241103.Controllers
         // GET: FacturaVentas/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null)
+            if (id == null || _context.FacturaVentas == null)
             {
                 return NotFound();
             }
@@ -39,7 +39,7 @@ namespace NDMM20241103.Controllers
             {
                 return NotFound();
             }
-
+            ViewBag.Accion = "Details";
             return View(facturaVenta);
         }
 
