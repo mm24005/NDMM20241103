@@ -33,6 +33,7 @@ namespace NDMM20241103.Controllers
             }
 
             var facturaVenta = await _context.FacturaVentas
+                .Include(s => s.DetFacturaVenta)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (facturaVenta == null)
             {
@@ -62,17 +63,21 @@ namespace NDMM20241103.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,FechaVenta,Correlativo,Cliente,TotalVenta")] FacturaVenta facturaVenta)
+        public async Task<IActionResult> Create([Bind("Id,FechaVenta,Correlativo,Cliente,TotalVenta,DetFacturaVenta")] FacturaVenta facturaVenta)
         {
-            if (ModelState.IsValid)
-            {
-                _context.Add(facturaVenta);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            return View(facturaVenta);
+            facturaVenta.TotalVenta = facturaVenta.DetFacturaVenta.Sum(s => s.Cantidad * s.PrecioUnitario);
+            _context.Add(facturaVenta);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+            // return View(facturaVenta);
         }
-
+        [HttpPost]
+        public ActionResult AgregarDetalles([Bind("Id,FechaVenta,Correlativo,Cliente,TotalVenta,DetFacturaVenta")] FacturaVenta facturaVenta, string accion)
+        {
+            facturaVenta.DetFacturaVenta.Add(new DetFacturaVenta { Cantidad = 1 });
+            ViewBag.Accion = accion;
+            return View(accion, facturaVenta);
+        }
         // GET: FacturaVentas/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
