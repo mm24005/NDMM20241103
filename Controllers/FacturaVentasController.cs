@@ -102,11 +102,14 @@ namespace NDMM20241103.Controllers
                 return NotFound();
             }
 
-            var facturaVenta = await _context.FacturaVentas.FindAsync(id);
+            var facturaVenta = await _context.FacturaVentas
+                .Include(s => s.DetFacturaVenta)
+                .FirstAsync(s => s.Id == id);
             if (facturaVenta == null)
             {
                 return NotFound();
             }
+            ViewBag.Accion = "Edit";
             return View(facturaVenta);
         }
 
@@ -115,34 +118,66 @@ namespace NDMM20241103.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,FechaVenta,Correlativo,Cliente,TotalVenta")] FacturaVenta facturaVenta)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,FechaVenta,Correlativo,Cliente,TotalVenta,DetFacturaVenta")] FacturaVenta facturaVenta)
         {
             if (id != facturaVenta.Id)
             {
                 return NotFound();
             }
 
-            if (ModelState.IsValid)
+            try
             {
-                try
+                // Obtener los datos de la base de datos que van a ser modificados
+                var facturaUpdate = await _context.FacturaVentas
+                        .Include(s => s.DetFacturaVenta)
+                        .FirstAsync(s => s.Id == facturaVenta.Id);
+                facturaUpdate.Correlativo = facturaVenta.Correlativo;
+                facturaUpdate.TotalVenta = facturaVenta.DetFacturaVenta.Where(s => s.Id > -1).Sum(s => s.PrecioUnitario * s.Cantidad);
+                facturaUpdate.Cliente = facturaVenta.Cliente;
+                facturaUpdate.FechaVenta = facturaVenta.FechaVenta;
+                // Obtener todos los detalles que seran nuevos y agregarlos a la base de datos
+                var detNew = facturaVenta.DetFacturaVenta.Where(s => s.Id == 0);
+                foreach (var d in detNew)
                 {
-                    _context.Update(facturaVenta);
-                    await _context.SaveChangesAsync();
+                    facturaUpdate.DetFacturaVenta.Add(d);
                 }
-                catch (DbUpdateConcurrencyException)
+                // Obtener todos los detalles que seran modificados y actualizar a la base de datos
+                var detUpdate = facturaVenta.DetFacturaVenta.Where(s => s.Id > 0);
+                foreach (var d in detUpdate)
                 {
-                    if (!FacturaVentaExists(facturaVenta.Id))
+                    var det = facturaUpdate.DetFacturaVenta.FirstOrDefault(s => s.Id == d.Id);
+                    det.Cantidad = d.Cantidad;
+                    det.PrecioUnitario = d.PrecioUnitario;
+                    det.Producto = d.Producto;
+                }
+                // Obtener todos los detalles que seran eliminados y actualizar a la base de datos
+                var delDet = facturaVenta.DetFacturaVenta.Where(s => s.Id < 0).ToList();
+                if (delDet != null && delDet.Count > 0)
+                {
+                    foreach (var d in delDet)
                     {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
+                        d.Id = d.Id * -1;
+                        var det = facturaUpdate.DetFacturaVenta.FirstOrDefault(s => s.Id == d.Id);
+                        _context.Remove(det);
+                        // facturaUpdate.DetFacturaVenta.Remove(det);
                     }
                 }
-                return RedirectToAction(nameof(Index));
+                // Aplicar esos cambios a la base de datos
+                _context.Update(facturaUpdate);
+                await _context.SaveChangesAsync();
             }
-            return View(facturaVenta);
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!FacturaVentaExists(facturaVenta.Id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: FacturaVentas/Delete/5
