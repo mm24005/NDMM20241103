@@ -183,18 +183,19 @@ namespace NDMM20241103.Controllers
         // GET: FacturaVentas/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null)
+            if (id == null || _context.FacturaVentas == null)
             {
                 return NotFound();
             }
 
             var facturaVenta = await _context.FacturaVentas
+                .Include(s => s.DetFacturaVenta)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (facturaVenta == null)
             {
                 return NotFound();
             }
-
+            ViewBag.Accion = "Delete";
             return View(facturaVenta);
         }
 
@@ -203,7 +204,12 @@ namespace NDMM20241103.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var facturaVenta = await _context.FacturaVentas.FindAsync(id);
+            if (_context.FacturaVentas == null)
+            {
+                return Problem("Entity set 'Practica20240305DBContext.FacturaVentas'  is null.");
+            }
+            var facturaVenta = await _context.FacturaVentas
+                .FindAsync(id);
             if (facturaVenta != null)
             {
                 _context.FacturaVentas.Remove(facturaVenta);
@@ -215,7 +221,7 @@ namespace NDMM20241103.Controllers
 
         private bool FacturaVentaExists(int id)
         {
-            return _context.FacturaVentas.Any(e => e.Id == id);
+            return (_context.FacturaVentas?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }
