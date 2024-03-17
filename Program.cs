@@ -1,7 +1,14 @@
+using Microsoft.EntityFrameworkCore;
+using NDMM20241103.Models;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddDbContext<NDMM20241103Contex>(options =>
+       options.UseSqlServer(builder.Configuration.GetConnectionString("ccn")));
+
 
 var app = builder.Build();
 
